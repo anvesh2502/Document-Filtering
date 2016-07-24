@@ -160,8 +160,34 @@ class fisherclassifier(classifier) :
         return p
 
 
+    def fisherprob(self,item,cat) :
+
+        # Multiply all the probabilities together
+        p=1
+        features=self.getfeatures(item)
+        for f in features :
+            p*=(self.weightedprob(self,cat,self.cprob))
+
+        # Take the natural log and multiply by -2
+        fscore=-2*math.log(p)
+
+        # Use the inverse chi2 function to get a probability
+        return self.invchi2(fscore,len(features)*2)
+
+    def invchi2(self,chi,df) :
+
+        m=chi/2.0
+        sum=term=math.exp(-m)
+        for i in range(1,df//2) :
+            term*=m/i
+            sum+=term
+        return min(sum,1.0)
+
+
+
+
 cl=fisherclassifier(getwords)
 cl.sampletrain()
 print cl.cprob('quick','good')
-print cl.cprob('money','bad')
-print cl.weightedprob('money','bad',cl.cprob)
+print cl.fisherprob('quick rabbit','good')
+print cl.fisherprob('quick rabbit','bad')
