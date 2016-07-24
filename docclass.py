@@ -128,8 +128,6 @@ class naivebayes(classifier) :
         return best
 
 
-
-
     def docprob(self,item,cat) :
         features=self.getfeatures(item)
 
@@ -144,9 +142,26 @@ class naivebayes(classifier) :
         docprob=self.docprob(item,cat)
         return docprob*catprob
 
-naive_classifier=naivebayes(getwords)
-naive_classifier.sampletrain()
-print naive_classifier.classify('quick rabbit',default='unknown')
-print naive_classifier.classify('quick money',default='unknown')
-naive_classifier.setthreshold('bad',3.0)
-print naive_classifier.classify('quick money',default='unknown')
+
+class fisherclassifier(classifier) :
+
+    def cprob(self,f,cat) :
+        # The frequency of this feature in this category
+        clf=self.fprob(f,cat)
+        if clf==0 : return 0
+
+        # The frequency of this feature in all the categories
+        freqsum=sum([self.fprob(f,c) for c in self.categories()])
+
+        # The probability is the frequency in this category divided
+        # by the overall frequency
+        p=clf/freqsum
+
+        return p
+
+
+cl=fisherclassifier(getwords)
+cl.sampletrain()
+print cl.cprob('quick','good')
+print cl.cprob('money','bad')
+print cl.weightedprob('money','bad',cl.cprob)
